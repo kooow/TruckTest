@@ -11,7 +11,7 @@ namespace TruckTest.Entities
 
         public List<KeyValuePair<int, int>> TruckId_RepeatedUse = new List<KeyValuePair<int, int>>();
 
-        public bool abandoned = false;
+        public bool Abandoned = false;
 
         public Result()
         {

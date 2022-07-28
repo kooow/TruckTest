@@ -8,12 +8,12 @@ namespace TruckTest
 {
     public class FileReader
     {
-        private static string[] ReadInputFile(string input_file)
+        private static string[] ReadInputFile(string inputFile)
         {
-            string input_file_path = Path.Combine(AppContext.BaseDirectory, input_file);
+            string input_file_path = Path.Combine(AppContext.BaseDirectory, inputFile);
             if (!File.Exists(input_file_path))
             {
-                throw new Exception("Error: missing input file: " + input_file + " in this directory: " + AppContext.BaseDirectory);
+                throw new Exception("Error: missing input file: " + inputFile + " in this directory: " + AppContext.BaseDirectory);
             }
 
             Console.WriteLine("Loaded file:" + input_file_path);
@@ -31,9 +31,9 @@ namespace TruckTest
             return input_file_content;
         }
 
-        public static FileData LoadAndCreateEntities(string inputfile)
+        public static FileData LoadAndCreateEntities(string inputFile)
         {
-            string[] input_file_lines = ReadInputFile(inputfile);
+            string[] input_file_lines = ReadInputFile(inputFile);
             Console.WriteLine("Loaded lines from file: " + input_file_lines.Length);
 
             string number_of_vehicles_string = input_file_lines[0];
@@ -69,13 +69,13 @@ namespace TruckTest
             return fileData;
         }
 
-        private static List<Job> ReadJobTypesFromLines(uint number_of_vehicles, string[] input_file_lines)
+        private static List<Job> ReadJobTypesFromLines(uint numberOfVehicles, string[] inputFileLines)
         {
             List<Job> jobTypes = new List<Job>();
 
-            for (uint i = number_of_vehicles + 2; i < input_file_lines.Length; i++)
+            for (uint i = numberOfVehicles + 2; i < inputFileLines.Length; i++)
             {
-                var jobid_jobtype = input_file_lines[i].Split(' ');
+                var jobid_jobtype = inputFileLines[i].Split(' ');
                 if (jobid_jobtype.Length != 2)
                 {
                     throw new Exception("Error: wrong input format!");
@@ -94,13 +94,13 @@ namespace TruckTest
             return jobTypes;
         }
 
-        private static List<Truck> ReadTrucksFromLines(uint number_of_vehicles, string[] input_file_lines)
+        private static List<Truck> ReadTrucksFromLines(uint numberOfVehicles, string[] inputFileLines)
         {
             List<Truck> trucks = new List<Truck>();
 
-            for (int i = 1; i < number_of_vehicles + 1; i++)
+            for (int i = 1; i < numberOfVehicles + 1; i++)
             {         
-                var truckid_compatibles = input_file_lines[i].Split(' ');
+                var truckid_compatibles = inputFileLines[i].Split(' ');
                 if (truckid_compatibles.Length < 2)
                 {
                     throw new Exception("Error: wrong input format!");
@@ -126,9 +126,9 @@ namespace TruckTest
             return trucks;
         }
 
-        private static void ValidateDatas(List<Job> jobtypes, List<Truck> trucks)
+        private static void ValidateDatas(List<Job> jobTypes, List<Truck> trucks)
         {
-            var allJobTypes = jobtypes.Select(jt => jt.Type).Distinct().ToList();
+            var allJobTypes = jobTypes.Select(jt => jt.Type).Distinct().ToList();
 
             for (int i = 0; i < trucks.Count; i++)
             {
