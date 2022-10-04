@@ -6,9 +6,20 @@ namespace TruckTest.Entities
 {
     public class Truck
     {
-        public int Id;
+        private char[] _compatibleJobTypes;
 
-        public char[] CompatibleJobTypes;
+        private int _id;
+
+        public int Id
+        {
+            get { return _id; }
+            set { _id = value; }
+        }
+
+        public char[] CompatibleJobTypes
+        {
+            get { return _compatibleJobTypes; }
+            set { _compatibleJobTypes = value; }
+        }
     }
-
 }

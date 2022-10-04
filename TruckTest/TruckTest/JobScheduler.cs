@@ -8,46 +8,51 @@ using TruckTest.Entities;
 namespace TruckTest
 {
 
-    public class JobScheduler
+    public class JobScheduler : IJobScheduler
     {
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="fileData"></param>
-        public static void CalculateResultsAndWriteToFile(FileData fileData)
+        public List<Result> CalculateResultsWithoutRepeatableTrucks(FileData fileData)
         {
             var jobs = fileData.Jobs;
             var trucks = fileData.Trucks;
 
-            int maximumCompatibleJobTypeListSize = trucks.Max(t => t.CompatibleJobTypes.Length);
+            int maximumCompatibleJobTypeListSize = fileData.Trucks.Max(t => t.CompatibleJobTypes.Length);
             Console.WriteLine("Truck with compatible job type list - Maximum length of list: " + maximumCompatibleJobTypeListSize);
-
 
             List<Result> resultsWithoutRepeat = CalculateWithoutRepeatableTrucks(jobs, trucks, maximumCompatibleJobTypeListSize);
 
             Console.WriteLine("Results (without repeatable trucks):" + resultsWithoutRepeat.Count);
 
-            if (resultsWithoutRepeat.Count > 0 && resultsWithoutRepeat.Count <= 2)
-            {
-                Console.WriteLine("");
-                WriteResultToFile(resultsWithoutRepeat[0], "output_without_repeat.txt");
-                Console.WriteLine("");
-            }
+            return resultsWithoutRepeat;
+        }
 
+        public List<Result> CalculateResultsWithRepeatable(FileData fileData, int maximumRepeat)
+        {
+            var jobs = fileData.Jobs;
+            var trucks = fileData.Trucks;
 
-            int maximumRepeat = 1;
+            int maximumCompatibleJobTypeListSize = fileData.Trucks.Max(t => t.CompatibleJobTypes.Length);
+            Console.WriteLine("Truck with compatible job type list - Maximum length of list: " + maximumCompatibleJobTypeListSize);
 
             List<Result> resultsWithRepeat = CalculateRepeatableTrucks(jobs, trucks, maximumRepeat, maximumCompatibleJobTypeListSize);
 
             Console.WriteLine("Results with repeatable trucks (Maximum repeat:" + maximumRepeat + ") " + resultsWithRepeat.Count);
 
-            if (resultsWithRepeat.Count > 0 && resultsWithRepeat.Count <= 2)
+            return resultsWithRepeat;
+        }
+
+        public void WriteResultToFile(List<Result> result, string fileName)
+        {
+            if (result.Count > 0 && result.Count <= 2)
             {
                 Console.WriteLine("");
-                WriteResultToFile(resultsWithRepeat[0], "output.txt");
+                WriteResultToFile(result[0], fileName);
+                Console.WriteLine("");
             }
-
+            else
+            {
+                Console.WriteLine("The result was not written to the file - result list length:" + result.Count);
+            }
         }
 
         /// <summary>
@@ -55,13 +60,13 @@ namespace TruckTest
         /// </summary>
         /// <param name="result"></param>
         /// <param name="outputFileName"></param>
-        private static void WriteResultToFile(Result result, string outputFileName)
+        private void WriteResultToFile(Result result, string outputFileName)
         {
             string resultTest = result.PrintToText();
 
             File.WriteAllText(outputFileName, resultTest);
 
-            Console.WriteLine("Result (" + result.TruckIdJobIdList.Count.ToString() + " line) is written to file ");
+            Console.WriteLine("Result (" + result.TruckIdJobIdListPairCount.ToString() + " line) is written to file ");
             Console.WriteLine(AppContext.BaseDirectory + "\\" + outputFileName);
         }
 
@@ -73,7 +78,7 @@ namespace TruckTest
         /// <param name="maximumRepeat"></param>
         /// <param name="maximumCompatibleJobTypeListSize"></param>
         /// <returns></returns>
-        private static List<Result> CalculateRepeatableTrucks(List<Job> jobs, List<Truck> trucks, int maximumRepeat, int maximumCompatibleJobTypeListSize)
+        private List<Result> CalculateRepeatableTrucks(List<Job> jobs, List<Truck> trucks, int maximumRepeat, int maximumCompatibleJobTypeListSize)
         {
             List<Result> resultList = new List<Result>();
             var firstResult = new Result();
@@ -100,7 +105,7 @@ namespace TruckTest
                         var truck = trucks.Single(t => t.Id == searchedId);
                         result.AddPlusRepeatedUse(truck.Id);
 
-                        result.TruckIdJobIdList.Add(new KeyValuePair<int, int>(truck.Id, job.Id));
+                        result.AddNewTruckIdJobIdPair(new KeyValuePair<int, int>(truck.Id, job.Id));
                     }
                     else // There are many options so we need to generate new branches with the previously used truckId and jobId pairs
                     {
@@ -110,14 +115,12 @@ namespace TruckTest
                             result.AddPlusRepeatedUse(truck.Id);
 
                             var resultClone = result.Clone() as Result;
-                            resultClone.TruckIdJobIdList.Add(new KeyValuePair<int, int>(truckid, job.Id));
+                            resultClone.AddNewTruckIdJobIdPair(new KeyValuePair<int, int>(truckid, job.Id));
                             newBranches.Add(resultClone);
                         }
                         result.Abandoned = true;
                     }
-
                 }
-
             }
 
             return resultList;
@@ -130,7 +133,7 @@ namespace TruckTest
         /// <param name="trucks"></param>
         /// <param name="maximumCompatibleJobTypeListSize"></param>
         /// <returns></returns>
-        private static List<Result> CalculateWithoutRepeatableTrucks(List<Job> jobs, List<Truck> trucks, int maximumCompatibleJobTypeListSize)
+        private List<Result> CalculateWithoutRepeatableTrucks(List<Job> jobs, List<Truck> trucks, int maximumCompatibleJobTypeListSize)
         {
             List<Result> resultList = new List<Result>();
 
@@ -156,14 +159,14 @@ namespace TruckTest
                         var searchedId = availableTruckIds.First();
                         var truck = trucks.Single(t => t.Id == searchedId);
 
-                        result.TruckIdJobIdList.Add(new KeyValuePair<int, int>(truck.Id, job.Id));
+                        result.AddNewTruckIdJobIdPair(new KeyValuePair<int, int>(truck.Id, job.Id));
                     }
                     else // There are many options so we need to generate new branches with the previously used truckId and jobId pairs
                     {
                         foreach (int truckid in availableTruckIds)
                         {
                             var resultClone = result.Clone() as Result;
-                            resultClone.TruckIdJobIdList.Add(new KeyValuePair<int, int>(truckid, job.Id));
+                            resultClone.AddNewTruckIdJobIdPair(new KeyValuePair<int, int>(truckid, job.Id));
                             newBranches.Add(resultClone);
                         }
                         result.Abandoned = true;
@@ -190,7 +193,7 @@ namespace TruckTest
         /// <param name="maximumRepeat"></param>
         /// <param name="searchedJobType"></param>
         /// <returns></returns>
-        private static List<int> GetAvailableTruckIdsByJobTypeWithRepeat(int maximumCompatibleJobTypeListSize, List<Truck> trucks, Result result, int maximumRepeat, char searchedJobType)
+        private List<int> GetAvailableTruckIdsByJobTypeWithRepeat(int maximumCompatibleJobTypeListSize, List<Truck> trucks, Result result, int maximumRepeat, char searchedJobType)
         {
 
             for (int maxSize = 1; maxSize <= maximumCompatibleJobTypeListSize; maxSize++)
@@ -211,7 +214,6 @@ namespace TruckTest
             }
 
             return new List<int>();
-
         }
 
         /// <summary>
@@ -222,7 +224,7 @@ namespace TruckTest
         /// <param name="previouslyUsedTruckIds"></param>
         /// <param name="searchedJobType"></param>
         /// <returns></returns>
-        private static List<int> GetAvailableTruckIdsByJobTypeWithoutRepeat(int maximumCompatibleJobTypeListSize, List<Truck> trucks, List<int> previouslyUsedTruckIds, char searchedJobType)
+        private List<int> GetAvailableTruckIdsByJobTypeWithoutRepeat(int maximumCompatibleJobTypeListSize, List<Truck> trucks, List<int> previouslyUsedTruckIds, char searchedJobType)
         {
             for (int maxSize = 1; maxSize <= maximumCompatibleJobTypeListSize; maxSize++)
             {

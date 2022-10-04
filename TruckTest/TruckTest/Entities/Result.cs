@@ -7,21 +7,46 @@ namespace TruckTest.Entities
 {
     public class Result : ICloneable
     {
-        public List<KeyValuePair<int, int>> TruckIdJobIdList = new List<KeyValuePair<int, int>>();
 
-        public List<KeyValuePair<int, int>> TruckIdRepeatedUse = new List<KeyValuePair<int, int>>();
+        private List<KeyValuePair<int, int>> _truckIdJobIdList;
 
-        public bool Abandoned = false;
+        private List<KeyValuePair<int, int>> _truckIdRepeatedUse;
+
+        private bool _abandoned;
+
+        public int TruckIdJobIdListPairCount
+        {
+            get { return _truckIdJobIdList.Count; }
+        }
+
+        public bool Abandoned
+        {
+            get { return _abandoned; }
+            set { _abandoned = value; }
+        }
 
         public Result()
         {
+            _truckIdJobIdList = new List<KeyValuePair<int, int>>();
+            _truckIdRepeatedUse = new List<KeyValuePair<int, int>>();
+            _abandoned = false;
+        }
+
+        public void AddNewTruckIdJobIdPair(KeyValuePair<int, int> truckIdJobIdPair)
+        {
+            _truckIdJobIdList.Add(truckIdJobIdPair);
+        }
+
+        public void AddNewTruckIdRepeatedUsePair(KeyValuePair<int, int> truckIdRepeatedUse)
+        {
+            _truckIdRepeatedUse.Add(truckIdRepeatedUse);
         }
 
         public void FillTruckIdRepeatUseList(List<Truck> trucks)
         {
             for (int i = 0; i < trucks.Count; i++)
             {
-                TruckIdRepeatedUse.Add(new KeyValuePair<int, int>(trucks[i].Id, 0));
+                _truckIdRepeatedUse.Add(new KeyValuePair<int, int>(trucks[i].Id, 0));
             }
         }
 
@@ -29,17 +54,16 @@ namespace TruckTest.Entities
         {
             var resultClone = new Result();
 
-            for (int i = 0; i < TruckIdJobIdList.Count; i++)
+            for (int i = 0; i < _truckIdJobIdList.Count; i++)
             {
-                var pair = TruckIdJobIdList[i];
-                resultClone.TruckIdJobIdList.Add(new KeyValuePair<int, int>(pair.Key, pair.Value));
+                var pair = _truckIdJobIdList[i];
+                resultClone.AddNewTruckIdJobIdPair(new KeyValuePair<int, int>(pair.Key, pair.Value));
             }
 
-
-            for (int i = 0; i < TruckIdRepeatedUse.Count; i++)
+            for (int i = 0; i < _truckIdRepeatedUse.Count; i++)
             {
-                var pair = TruckIdRepeatedUse[i];
-                resultClone.TruckIdRepeatedUse.Add(new KeyValuePair<int, int>(pair.Key, pair.Value));
+                var pair = _truckIdRepeatedUse[i];
+                resultClone.AddNewTruckIdRepeatedUsePair(new KeyValuePair<int, int>(pair.Key, pair.Value));
             }
 
             return resultClone;
@@ -47,29 +71,29 @@ namespace TruckTest.Entities
 
         public void AddPlusRepeatedUse(int truckId)
         {
-            KeyValuePair<int, int> truckIdRepeated = TruckIdRepeatedUse.FirstOrDefault(t => t.Key == truckId);
+            KeyValuePair<int, int> truckIdRepeated = _truckIdRepeatedUse.FirstOrDefault(t => t.Key == truckId);
         
             int repeated = truckIdRepeated.Value;
             repeated++;
-            TruckIdRepeatedUse.Remove(truckIdRepeated);
-            TruckIdRepeatedUse.Add(new KeyValuePair<int, int>(truckId, repeated));     
+            _truckIdRepeatedUse.Remove(truckIdRepeated);
+            _truckIdRepeatedUse.Add(new KeyValuePair<int, int>(truckId, repeated));     
         }
 
         public List<int> GetTruckIdsByRepeatedUse(int repeatedUseNumber)
         {
-            return TruckIdRepeatedUse.Where(tj => tj.Value == repeatedUseNumber).Select(tr => tr.Key).ToList();
+            return _truckIdRepeatedUse.Where(tj => tj.Value == repeatedUseNumber).Select(tr => tr.Key).ToList();
         }
 
         public List<int> GetPreviouslyUsedTruckIds()
         {
-            return TruckIdJobIdList.Select(tj => tj.Key).ToList();
+            return _truckIdJobIdList.Select(tj => tj.Key).ToList();
         }
 
         public string PrintToText()
         {
             StringBuilder stringBuilder = new StringBuilder();
 
-            foreach (KeyValuePair<int, int> truckAndJob in TruckIdJobIdList)
+            foreach (KeyValuePair<int, int> truckAndJob in _truckIdJobIdList)
             {
                 var truckId = truckAndJob.Key;
                 var jobId = truckAndJob.Value;

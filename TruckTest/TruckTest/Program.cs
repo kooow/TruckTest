@@ -15,10 +15,19 @@ namespace TruckTest
         {
             Console.WriteLine("Base dir: " + AppContext.BaseDirectory);
 
-            var fileData = FileReader.LoadAndCreateEntities(s_inputFile);
+            IFileReader fileReader = new FileReader();
+            var fileData = fileReader.LoadAndCreateEntities(s_inputFile);
 
-            JobScheduler.CalculateResultsAndWriteToFile(fileData);
-     
+            IJobScheduler jobScheduler = new JobScheduler();
+
+            var resultsWithoutRepeatableTrucks = jobScheduler.CalculateResultsWithoutRepeatableTrucks(fileData);
+            jobScheduler.WriteResultToFile(resultsWithoutRepeatableTrucks, "output_without_repeat.txt");
+
+            int maximumRepeat = 1;
+
+            var resultsWithRepeatable = jobScheduler.CalculateResultsWithRepeatable(fileData, maximumRepeat);
+            jobScheduler.WriteResultToFile(resultsWithRepeatable, "output.txt");
+
             Console.ReadKey();
         }
 

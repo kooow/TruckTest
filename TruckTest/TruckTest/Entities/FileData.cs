@@ -6,10 +6,23 @@ namespace TruckTest.Entities
 {
     public class FileData
     {
-        public List<Truck> Trucks;
+        private List<Truck> _trucks;
 
-        public List<Job> Jobs;
+        private List<Job> _jobs;
 
+        public List<Truck> Trucks
+        {
+            get { return _trucks; }
+        }
+        public List<Job> Jobs
+        {
+            get { return _jobs; }
+        }
+
+        public FileData(List<Truck> trucks, List<Job> jobs)
+        {
+            _trucks = trucks;
+            _jobs = jobs;
+        }
     }
-
 }

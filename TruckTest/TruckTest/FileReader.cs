@@ -6,9 +6,9 @@ using TruckTest.Entities;
 
 namespace TruckTest
 {
-    public class FileReader
+    public class FileReader : IFileReader
     {
-        private static string[] ReadInputFile(string inputFile)
+        private string[] ReadInputFile(string inputFile)
         {
             string inputFilePath = Path.Combine(AppContext.BaseDirectory, inputFile);
             if (!File.Exists(inputFilePath))
@@ -31,7 +31,7 @@ namespace TruckTest
             return inputFileContent;
         }
 
-        public static FileData LoadAndCreateEntities(string inputFile)
+        public FileData LoadAndCreateEntities(string inputFile)
         {
             string[] inputFileLines = ReadInputFile(inputFile);
             Console.WriteLine("Loaded lines from file: " + inputFileLines.Length);
@@ -52,24 +52,20 @@ namespace TruckTest
                 throw new Exception("Error: wrong input format! Not enough lines!");
             }
 
-            var jobTypes = ReadJobTypesFromLines(numberOfVehicles, inputFileLines);
-            Console.WriteLine("Processed job types: " + jobTypes.Count);
+            var jobs = ReadJobTypesFromLines(numberOfVehicles, inputFileLines);
+            Console.WriteLine("Processed job types: " + jobs.Count);
 
             var trucks = ReadTrucksFromLines(numberOfVehicles, inputFileLines);
             Console.WriteLine("Processed trucks: " + trucks.Count);
 
-            ValidateDatas(jobTypes, trucks);
+            ValidateDatas(jobs, trucks);
 
-            FileData fileData = new FileData
-            {
-                Jobs = jobTypes,
-                Trucks = trucks
-            };
+            FileData fileData = new FileData(trucks, jobs);
 
             return fileData;
         }
 
-        private static List<Job> ReadJobTypesFromLines(uint numberOfVehicles, string[] inputFileLines)
+        private List<Job> ReadJobTypesFromLines(uint numberOfVehicles, string[] inputFileLines)
         {
             List<Job> jobTypes = new List<Job>();
 
@@ -94,7 +90,7 @@ namespace TruckTest
             return jobTypes;
         }
 
-        private static List<Truck> ReadTrucksFromLines(uint numberOfVehicles, string[] inputFileLines)
+        private List<Truck> ReadTrucksFromLines(uint numberOfVehicles, string[] inputFileLines)
         {
             List<Truck> trucks = new List<Truck>();
 
@@ -126,7 +122,7 @@ namespace TruckTest
             return trucks;
         }
 
-        private static void ValidateDatas(List<Job> jobTypes, List<Truck> trucks)
+        private void ValidateDatas(List<Job> jobTypes, List<Truck> trucks)
         {
             var allJobTypes = jobTypes.Select(jt => jt.Type).Distinct().ToList();
 
