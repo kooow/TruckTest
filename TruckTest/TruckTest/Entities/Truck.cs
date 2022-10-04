@@ -9,7 +9,6 @@ namespace TruckTest.Entities
         public int Id;
 
         public char[] CompatibleJobTypes;
-
     }
 
 }

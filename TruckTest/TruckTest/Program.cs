@@ -9,13 +9,13 @@ namespace TruckTest
     class Program
     {
 
-        private static readonly string inputFile = "_input.txt";
+        private static readonly string s_inputFile = "_input.txt";
 
         static void Main(string[] args)
         {
             Console.WriteLine("Base dir: " + AppContext.BaseDirectory);
 
-            var fileData = FileReader.LoadAndCreateEntities(inputFile);
+            var fileData = FileReader.LoadAndCreateEntities(s_inputFile);
 
             JobScheduler.CalculateResultsAndWriteToFile(fileData);
      

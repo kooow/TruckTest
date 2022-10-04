@@ -24,28 +24,28 @@ namespace TruckTest
             Console.WriteLine("Truck with compatible job type list - Maximum length of list: " + maximumCompatibleJobTypeListSize);
 
 
-            List<Result> results_without_repeat = CalculateWithoutRepeatableTrucks(jobs, trucks, maximumCompatibleJobTypeListSize);
+            List<Result> resultsWithoutRepeat = CalculateWithoutRepeatableTrucks(jobs, trucks, maximumCompatibleJobTypeListSize);
 
-            Console.WriteLine("Results (without repeatable trucks):" + results_without_repeat.Count);
+            Console.WriteLine("Results (without repeatable trucks):" + resultsWithoutRepeat.Count);
 
-            if (results_without_repeat.Count > 0 && results_without_repeat.Count <= 2)
+            if (resultsWithoutRepeat.Count > 0 && resultsWithoutRepeat.Count <= 2)
             {
                 Console.WriteLine("");
-                WriteResultToFile(results_without_repeat[0], "output_without_repeat.txt");
+                WriteResultToFile(resultsWithoutRepeat[0], "output_without_repeat.txt");
                 Console.WriteLine("");
             }
 
 
             int maximumRepeat = 1;
 
-            List<Result> results_with_repeat = CalculateRepeatableTrucks(jobs, trucks, maximumRepeat, maximumCompatibleJobTypeListSize);
+            List<Result> resultsWithRepeat = CalculateRepeatableTrucks(jobs, trucks, maximumRepeat, maximumCompatibleJobTypeListSize);
 
-            Console.WriteLine("Results with repeatable trucks (Maximum repeat:" + maximumRepeat + ") " + results_with_repeat.Count);
+            Console.WriteLine("Results with repeatable trucks (Maximum repeat:" + maximumRepeat + ") " + resultsWithRepeat.Count);
 
-            if (results_with_repeat.Count > 0 && results_with_repeat.Count <= 2)
+            if (resultsWithRepeat.Count > 0 && resultsWithRepeat.Count <= 2)
             {
                 Console.WriteLine("");
-                WriteResultToFile(results_with_repeat[0], "output.txt");
+                WriteResultToFile(resultsWithRepeat[0], "output.txt");
             }
 
         }
@@ -61,7 +61,7 @@ namespace TruckTest
 
             File.WriteAllText(outputFileName, resultTest);
 
-            Console.WriteLine("Result (" + result.TruckId_JobId_List.Count.ToString() + " line) is written to file ");
+            Console.WriteLine("Result (" + result.TruckIdJobIdList.Count.ToString() + " line) is written to file ");
             Console.WriteLine(AppContext.BaseDirectory + "\\" + outputFileName);
         }
 
@@ -75,10 +75,10 @@ namespace TruckTest
         /// <returns></returns>
         private static List<Result> CalculateRepeatableTrucks(List<Job> jobs, List<Truck> trucks, int maximumRepeat, int maximumCompatibleJobTypeListSize)
         {
-            List<Result> result_list = new List<Result>();
-            var first_result = new Result();
-            first_result.FillTruckIdRepeatUseList(trucks);
-            result_list.Add(first_result);
+            List<Result> resultList = new List<Result>();
+            var firstResult = new Result();
+            firstResult.FillTruckIdRepeatUseList(trucks);
+            resultList.Add(firstResult);
 
             for (int j = 0; j < jobs.Count; j++)
             {
@@ -86,31 +86,31 @@ namespace TruckTest
 
                 var job = jobs[j];
 
-                foreach (Result result in result_list)
+                foreach (Result result in resultList)
                 {
-                    var available_truck_ids = GetAvailableTruckIdsByJobTypeWithRepeat(maximumCompatibleJobTypeListSize, trucks, result, maximumRepeat, job.Type);
+                    var availableTruckIds = GetAvailableTruckIdsByJobTypeWithRepeat(maximumCompatibleJobTypeListSize, trucks, result, maximumRepeat, job.Type);
 
-                    if (available_truck_ids.Count == 0) // dead branch
+                    if (availableTruckIds.Count == 0) // dead branch
                     {
                         result.Abandoned = true;
                     }
-                    else if (available_truck_ids.Count == 1) // we have only one option, we move on
+                    else if (availableTruckIds.Count == 1) // we have only one option, we move on
                     {
-                        var searched_id = available_truck_ids.First();
-                        var truck = trucks.Single(t => t.Id == searched_id);
+                        var searchedId = availableTruckIds.First();
+                        var truck = trucks.Single(t => t.Id == searchedId);
                         result.AddPlusRepeatedUse(truck.Id);
 
-                        result.TruckId_JobId_List.Add(new KeyValuePair<int, int>(truck.Id, job.Id));
+                        result.TruckIdJobIdList.Add(new KeyValuePair<int, int>(truck.Id, job.Id));
                     }
-                    else // There are many options so we need to generate new branches with the previously used truck_id and job_id pairs
+                    else // There are many options so we need to generate new branches with the previously used truckId and jobId pairs
                     {
-                        foreach (int truckid in available_truck_ids)
+                        foreach (int truckid in availableTruckIds)
                         {
                             var truck = trucks.Single(t => t.Id == truckid);
                             result.AddPlusRepeatedUse(truck.Id);
 
                             var resultClone = result.Clone() as Result;
-                            resultClone.TruckId_JobId_List.Add(new KeyValuePair<int, int>(truckid, job.Id));
+                            resultClone.TruckIdJobIdList.Add(new KeyValuePair<int, int>(truckid, job.Id));
                             newBranches.Add(resultClone);
                         }
                         result.Abandoned = true;
@@ -120,7 +120,7 @@ namespace TruckTest
 
             }
 
-            return result_list;
+            return resultList;
         }
 
         /// <summary>
@@ -132,9 +132,9 @@ namespace TruckTest
         /// <returns></returns>
         private static List<Result> CalculateWithoutRepeatableTrucks(List<Job> jobs, List<Truck> trucks, int maximumCompatibleJobTypeListSize)
         {
-            List<Result> result_list = new List<Result>();
+            List<Result> resultList = new List<Result>();
 
-            result_list.Add(new Result());
+            resultList.Add(new Result());
 
             for (int j = 0; j < jobs.Count; j++)
             {
@@ -142,28 +142,28 @@ namespace TruckTest
 
                 var job = jobs[j];
 
-                foreach (Result result in result_list)
+                foreach (Result result in resultList)
                 {
-                    var previously_used_truck_ids = result.GetPreviouslyUsedTruckIds();
-                    var available_truck_ids = GetAvailableTruckIdsByJobTypeWithoutRepeat(maximumCompatibleJobTypeListSize, trucks, previously_used_truck_ids, job.Type);
+                    var previouslyUsedTruckIds = result.GetPreviouslyUsedTruckIds();
+                    var availableTruckIds = GetAvailableTruckIdsByJobTypeWithoutRepeat(maximumCompatibleJobTypeListSize, trucks, previouslyUsedTruckIds, job.Type);
 
-                    if (available_truck_ids.Count == 0) // dead branch
+                    if (availableTruckIds.Count == 0) // dead branch
                     {
                         result.Abandoned = true;
                     }
-                    else if (available_truck_ids.Count == 1) // we have only one option, we move on
+                    else if (availableTruckIds.Count == 1) // we have only one option, we move on
                     {
-                        var searched_id = available_truck_ids.First();
-                        var truck = trucks.Single(t => t.Id == searched_id);
+                        var searchedId = availableTruckIds.First();
+                        var truck = trucks.Single(t => t.Id == searchedId);
 
-                        result.TruckId_JobId_List.Add(new KeyValuePair<int, int>(truck.Id, job.Id));
+                        result.TruckIdJobIdList.Add(new KeyValuePair<int, int>(truck.Id, job.Id));
                     }
-                    else // There are many options so we need to generate new branches with the previously used truck_id and job_id pairs
+                    else // There are many options so we need to generate new branches with the previously used truckId and jobId pairs
                     {
-                        foreach (int truckid in available_truck_ids)
+                        foreach (int truckid in availableTruckIds)
                         {
                             var resultClone = result.Clone() as Result;
-                            resultClone.TruckId_JobId_List.Add(new KeyValuePair<int, int>(truckid, job.Id));
+                            resultClone.TruckIdJobIdList.Add(new KeyValuePair<int, int>(truckid, job.Id));
                             newBranches.Add(resultClone);
                         }
                         result.Abandoned = true;
@@ -172,13 +172,13 @@ namespace TruckTest
 
                 if (newBranches.Count > 0)
                 {
-                    result_list.AddRange(newBranches);
+                    resultList.AddRange(newBranches);
                 }
 
-                result_list = result_list.Where(r => r.Abandoned == false).ToList();
+                resultList = resultList.Where(r => r.Abandoned == false).ToList();
             }
 
-            return result_list;
+            return resultList;
         }
 
         /// <summary>
@@ -193,19 +193,19 @@ namespace TruckTest
         private static List<int> GetAvailableTruckIdsByJobTypeWithRepeat(int maximumCompatibleJobTypeListSize, List<Truck> trucks, Result result, int maximumRepeat, char searchedJobType)
         {
 
-            for (int max_size = 1; max_size <= maximumCompatibleJobTypeListSize; max_size++)
+            for (int maxSize = 1; maxSize <= maximumCompatibleJobTypeListSize; maxSize++)
             {
                 for (int repeat = 0; repeat <= maximumRepeat; repeat++)
                 {
-                    List<int> truck_ids_with_repeat_number = new List<int>();
+                    List<int> truckIdsWithRepeatNumber = new List<int>();
 
-                    var truckids_with_repeat = result.GetTruckIdsByRepeatedUse(repeat);
+                    var truckIdsWithRepeat = result.GetTruckIdsByRepeatedUse(repeat);
 
-                    var first_available_truck_with_this_size = trucks.FirstOrDefault(t => t.CompatibleJobTypes.Length == max_size && t.CompatibleJobTypes.Contains(searchedJobType)
-                                                                                         && truckids_with_repeat.Contains(t.Id));
-                    if (first_available_truck_with_this_size != null)
+                    var firstAvailableTruckWithThisSize = trucks.FirstOrDefault(t => t.CompatibleJobTypes.Length == maxSize && t.CompatibleJobTypes.Contains(searchedJobType)
+                                                                                         && truckIdsWithRepeat.Contains(t.Id));
+                    if (firstAvailableTruckWithThisSize != null)
                     {
-                        return new List<int> { first_available_truck_with_this_size.Id };
+                        return new List<int> { firstAvailableTruckWithThisSize.Id };
                     }
                 }
             }
@@ -224,13 +224,13 @@ namespace TruckTest
         /// <returns></returns>
         private static List<int> GetAvailableTruckIdsByJobTypeWithoutRepeat(int maximumCompatibleJobTypeListSize, List<Truck> trucks, List<int> previouslyUsedTruckIds, char searchedJobType)
         {
-            for (int max_size = 1; max_size <= maximumCompatibleJobTypeListSize; max_size++)
+            for (int maxSize = 1; maxSize <= maximumCompatibleJobTypeListSize; maxSize++)
             {
-                var first_available_truck_with_this_size = trucks.FirstOrDefault(t => previouslyUsedTruckIds.Contains(t.Id) == false &&
-                                        t.CompatibleJobTypes.Length == max_size && t.CompatibleJobTypes.Contains(searchedJobType));
-                if (first_available_truck_with_this_size != null)
+                var firstAvailableTruckWithThisSize = trucks.FirstOrDefault(t => previouslyUsedTruckIds.Contains(t.Id) == false &&
+                                        t.CompatibleJobTypes.Length == maxSize && t.CompatibleJobTypes.Contains(searchedJobType));
+                if (firstAvailableTruckWithThisSize != null)
                 {
-                    return new List<int> { first_available_truck_with_this_size.Id };
+                    return new List<int> { firstAvailableTruckWithThisSize.Id };
                 }
             }
 
