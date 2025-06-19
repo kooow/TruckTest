@@ -8,7 +8,6 @@ namespace TruckTest;
 
 public class JobScheduler : IJobScheduler
 {
-
     public List<Result> CalculateResultsWithoutRepeatableTrucks(FileData fileData)
     {
         var jobs = fileData.Jobs;
@@ -49,7 +48,7 @@ public class JobScheduler : IJobScheduler
         }
         else
         {
-            Console.WriteLine($"The result was not written to the file - result list length:{result.Count}");
+            Console.WriteLine($"The result was not written to the file - result list length: {result.Count}");
         }
     }
 
@@ -60,7 +59,7 @@ public class JobScheduler : IJobScheduler
         File.WriteAllText(outputFileName, resultTest);
 
         Console.WriteLine($"Result ({result.TruckIdJobIdListPairCount} line) is written to file");
-        Console.WriteLine(AppContext.BaseDirectory + "\\" + outputFileName);
+        Console.WriteLine($"{AppContext.BaseDirectory}\\{outputFileName}");
     }
 
     private List<Result> CalculateRepeatableTrucks(List<Job> jobs, List<Truck> trucks, int maximumRepeat, int maximumCompatibleJobTypeListSize)

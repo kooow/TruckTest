@@ -65,7 +65,7 @@ public class Result : ICloneable
 
     public void AddPlusRepeatedUse(int truckId)
     {
-        KeyValuePair<int, int> truckIdRepeated = m_truckIdRepeatedUse.FirstOrDefault(t => t.Key == truckId);
+        KeyValuePair<int, int> truckIdRepeated = m_truckIdRepeatedUse.First(t => t.Key == truckId);
 
         int repeated = truckIdRepeated.Value;
         repeated++;
